@@ -1,4 +1,9 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*
+import sys
+defaultencoding = 'utf-8'
+if sys.getdefaultencoding() != defaultencoding:
+    reload(sys)
+    sys.setdefaultencoding(defaultencoding)
 import sqlite3
 from flask import Flask, request, session, g, redirect, url_for, \
      abort, render_template, flash
@@ -15,7 +20,7 @@ PASSWORD = 'default'
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
-
+user = None
 def connect_db():
     return sqlite3.connect(app.config['DATABASE'])
 
@@ -25,8 +30,6 @@ def init_db():
         with app.open_resource('schema.sql') as f:
             db.cursor().executescript(f.read().decode())
         db.commit()
-
-
 
 
 @app.before_request
@@ -46,7 +49,8 @@ def show_entries():
     return render_template('show_entries.html', entries=entries)
 
 
-'这个视图允许登录的用户添加新的条目。它只回应 POST 请求，实际的表单是显示在 show_entries 页面。 如果一些工作正常的话，我们用 flash() 向下一个请求闪现一条信息并且跳转回 show_entries 页'
+'这个视图允许登录的用户添加新的条目。它只回应 POST 请求，实际的表单是显示在 show_entries 页面。 如果一些工作正常的话，' \
+'我们用 flash() 向下一个请求闪现一条信息并且跳转回 show_entries 页'
 
 @app.route('/add', methods=['POST'])
 def add_entry():
@@ -68,13 +72,16 @@ def add_entry():
 def login():
     error = None
     if request.method == 'POST':
+        print(type(request.form['username']))
         if request.form['username'] != app.config['USERNAME']:
-            error = 'Invalid username'
+            error = '登录账号无效'
         elif request.form['password'] != app.config['PASSWORD']:
-            error = 'Invalid password'
+            error = '密码错误'
+        elif request.form['username'] == '':
+            error = 'can not be empty'
         else:
             session['logged_in'] = True
-            flash('You were logged in')
+            flash('登录成功！')
             return redirect(url_for('show_entries'))
     return render_template('login.html', error=error)
 
@@ -86,7 +93,7 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
-    flash('You were logged out')
+    flash('你已经退出啦')
     return redirect(url_for('show_entries'))
 
 

@@ -35,7 +35,18 @@ id值最大的条目（最新的条目）将在最前面。从游标返回的行
 
 
 
+因为编码原因，py文件运行后会报错如：
 
+SyntaxError: Non-ASCII character '\xe8' in file flaskr.py on line 41,
+
+solution：
+在py文件中加入，
+# -*- coding: utf-8 -*
+import sys
+defaultencoding = 'utf-8'
+if sys.getdefaultencoding() != defaultencoding:
+    reload(sys)
+    sys.setdefaultencoding(defaultencoding)
 
 
 
